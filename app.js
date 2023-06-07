@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const router = require('./routes/users');
+const router = require('./routes/index');
 
 const { PORT = 3000 } = process.env;
 const BASE_URL = 'mongodb://0.0.0.0:27017/mestodb';
