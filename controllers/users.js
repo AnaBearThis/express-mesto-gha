@@ -19,8 +19,9 @@ module.exports.getUserById = (req, res) => {
     .then(user => {
       if(!user) {
         res.status(404).send({ message: "Запрашиваемый пользователь не найден" })
-      }
-      res.send({ data: user })})
+      } else {
+        res.send({ data: user })}
+      })
     .catch(err => res.status(500).send({ message: `Произошла ошибка ${err}`}))
 }
 
@@ -32,7 +33,7 @@ module.exports.createUser = (req, res) => {
     .catch(err => {
       if (err.name === "ValidationError") {
         const ValidationErr = new ValidationError("Переданы некорректные данные при создании пользователя.")
-        res.send(ValidationErr.message)
+        res.send(ValidationErr)
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
@@ -46,12 +47,13 @@ module.exports.updateUserInfo = (req, res) => {
     .then(user => {
       if(!user) {
         res.status(404).send({ message: "Запрашиваемый пользователь не найден" })
-      }
-      res.send({ data: user })})
+      } else {
+        res.send({ data: user })}
+      })
     .catch(err => {
       if (err.name === "ValidationError") {
         const ValidationErr = new ValidationError("Переданы некорректные данные при обновлении профиля.")
-        res.send(ValidationErr.message)
+        res.send(ValidationErr)
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
@@ -65,12 +67,13 @@ module.exports.updateAvatar = (req, res) => {
     .then(user => {
       if(!user) {
         res.status(404).send({ message: "Запрашиваемый пользователь не найден" })
-      }
-      res.send({ data: user })})
+      } else {
+        res.send({ data: user })}
+      })
     .catch(err => {
       if (err.name === "ValidationError") {
         const ValidationErr = new ValidationError("Переданы некорректные данные при обновлении аватара.")
-        res.send(ValidationErr.message)
+        res.send(ValidationErr)
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
