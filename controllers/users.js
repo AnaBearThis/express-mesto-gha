@@ -31,7 +31,8 @@ module.exports.createUser = (req, res) => {
     .then(user => res.send({ data: user }))
     .catch(err => {
       if (err.name === "ValidationError") {
-        throw new ValidationError("Переданы некорректные данные при создании пользователя.")
+        const ValidationErr = new ValidationError("Переданы некорректные данные при создании пользователя.")
+        res.send(ValidationErr.message)
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
@@ -49,7 +50,8 @@ module.exports.updateUserInfo = (req, res) => {
       res.send({ data: user })})
     .catch(err => {
       if (err.name === "ValidationError") {
-        throw new ValidationError("Переданы некорректные данные при обновлении профиля.")
+        const ValidationErr = new ValidationError("Переданы некорректные данные при обновлении профиля.")
+        res.send(ValidationErr.message)
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
@@ -67,7 +69,8 @@ module.exports.updateAvatar = (req, res) => {
       res.send({ data: user })})
     .catch(err => {
       if (err.name === "ValidationError") {
-        throw new ValidationError("Переданы некорректные данные при обновлении аватара.")
+        const ValidationErr = new ValidationError("Переданы некорректные данные при обновлении аватара.")
+        res.send(ValidationErr.message)
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
