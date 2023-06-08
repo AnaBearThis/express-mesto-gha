@@ -1,12 +1,5 @@
+const { default: mongoose } = require('mongoose');
 const Card = require('../models/card')
-
-class ValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "ValidationError";
-    this.statusCode = 400;
-  }
-}
 
 module.exports.getCards = (req, res) => {
   Card.find({})
@@ -21,9 +14,8 @@ module.exports.createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then(card => res.send({ data: card }))
     .catch(err => {
-      if (err.name === "ValidationError") {
-        const ValidationErr = new ValidationError("Переданы некорректные данные при создании карточки.")
-        res.status(400).send({ message: ValidationErr.message})
+      if (err instanceof mongoose.Error.ValidationError) {
+        res.status(400).send({ message: "Переданы некорректные данные при создании карточки."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
@@ -41,7 +33,7 @@ module.exports.deleteCard = (req, res) => {
       }
       })
     .catch(err => {
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         res.status(400).send({ message: "Переданы некорректные данные _id."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
@@ -63,7 +55,7 @@ module.exports.likeCard = (req, res) => {
       }
       })
     .catch(err => {
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         res.status(400).send({ message: "Переданы некорректные данные для постановки лайка."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
@@ -85,7 +77,7 @@ module.exports.dislikeCard = (req, res) => {
       }
       })
     .catch(err => {
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         res.status(400).send({ message: "Переданы некорректные данные для снятия лайка."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})

@@ -1,12 +1,5 @@
+const { default: mongoose } = require('mongoose');
 const User = require('../models/user')
-
-class ValidationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "ValidationError";
-    this.statusCode = 400;
-  }
-}
 
 module.exports.getUsers = (req, res) => {
   User.find({})
@@ -23,7 +16,7 @@ module.exports.getUserById = (req, res) => {
         res.send({data: user})
       }})
     .catch(err => {
-      if (err.name === "CastError") {
+      if (err instanceof mongoose.Error.CastError) {
         res.status(400).send({ message: "Переданы некорректные данные _id."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
@@ -37,9 +30,9 @@ module.exports.createUser = (req, res) => {
   User.create({ name, about, avatar })
     .then(user => res.send({ data: user }))
     .catch(err => {
-      if (err.name === "ValidationError") {
-        const ValidationErr = new ValidationError("Переданы некорректные данные при создании пользователя.")
-        res.status(400).send({ message: ValidationErr.message})
+      console.log(mongoose.Error);
+      if (err instanceof mongoose.Error.ValidationError) {
+        res.status(400).send({ message: "Переданы некорректные данные при создании пользователя."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
@@ -57,9 +50,8 @@ module.exports.updateUserInfo = (req, res) => {
         res.send({ data: user })}
       })
     .catch(err => {
-      if (err.name === "ValidationError") {
-        const ValidationErr = new ValidationError("Переданы некорректные данные при обновлении профиля.")
-        res.status(400).send({ message: ValidationErr.message})
+      if (err instanceof mongoose.Error.ValidationError) {
+        res.status(400).send({ message: "Переданы некорректные данные при обновлении профиля."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
@@ -77,9 +69,8 @@ module.exports.updateAvatar = (req, res) => {
         res.send({ data: user })}
       })
     .catch(err => {
-      if (err.name === "ValidationError") {
-        const ValidationErr = new ValidationError("Переданы некорректные данные при обновлении аватара.")
-        res.status(400).send({ message: ValidationErr.message})
+      if (err instanceof mongoose.Error.ValidationError) {
+        res.status(400).send({ message: "Переданы некорректные данные при обновлении аватара."})
       } else {
         res.status(500).send({ message: `Произошла ошибка ${err}`})
       }
