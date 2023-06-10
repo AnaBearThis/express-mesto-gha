@@ -1,5 +1,7 @@
 const router = require('express').Router();
-const { getCards, createCard, deleteCard, likeCard, dislikeCard } = require('../controllers/cards')
+const {
+  getCards, createCard, deleteCard, likeCard, dislikeCard,
+} = require('../controllers/cards');
 
 const ERROR_CODE_NOT_FOUND = 404;
 
