@@ -18,7 +18,7 @@ module.exports.createCard = (req, res, next) => {
 module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      if (req.user._id !== card.owner) {
+      if (req.user.userId !== card.owner) {
         throw new Error('Недостаточно прав');
       } else if (!card) {
         throw new Error('Запрашиваемая страница не найдена');

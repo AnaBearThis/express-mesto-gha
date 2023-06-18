@@ -8,8 +8,16 @@ const {
 const ERROR_CODE_NOT_FOUND = 404;
 
 router.get('/', getUsers);
-router.get('/:userId', getUserById);
-router.get('/me', getUserById);
+router.get('/:userId', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().length(24),
+  }),
+}), getUserById);
+router.get('/me', celebrate({
+  params: Joi.object().keys({
+    _id: Joi.string().alphanum().length(24),
+  }),
+}), getUserById);
 router.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
@@ -18,7 +26,7 @@ router.patch('/me', celebrate({
 }), updateUserInfo);
 router.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string(),
+    avatar: Joi.string().regex(/^(http|https):\/\/(www\.)?[a-zA-Z\d-._~:/?#[\]@!$&'()*+,;=]+#?$/),
   }),
 }), updateAvatar);
 router.use('*', (req, res) => {

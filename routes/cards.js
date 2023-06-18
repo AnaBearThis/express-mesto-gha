@@ -10,13 +10,25 @@ const ERROR_CODE_NOT_FOUND = 404;
 router.get('/', getCards);
 router.post('/', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    link: Joi.string().pattern(/^(http|https):\/\/(www\.)?[a-zA-Z\d-._~:/?#[\]@!$&'()*+,;=]+#?$/),
+    name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().regex(/^(http|https):\/\/(www\.)?[a-zA-Z\d-._~:/?#[\]@!$&'()*+,;=]+#?$/),
   }),
 }), createCard);
-router.delete('/:cardId', deleteCard);
-router.put('/:cardId/likes', likeCard);
-router.delete('/:cardId/likes', dislikeCard);
+router.delete('/:cardId', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24),
+  }),
+}), deleteCard);
+router.put('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24),
+  }),
+}), likeCard);
+router.delete('/:cardId/likes', celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().length(24),
+  }),
+}), dislikeCard);
 router.use('*', (req, res) => {
   res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Страница не найдена' });
 });
