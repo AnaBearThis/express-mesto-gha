@@ -16,15 +16,19 @@ module.exports.createCard = (req, res, next) => {
 };
 
 module.exports.deleteCard = (req, res, next) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  console.log(req.params.cardId);
+  Card.findById(req.params.cardId)
     .then((card) => {
-      if (req.user.userId !== card.owner) {
-        throw new Error('Недостаточно прав');
-      } else if (!card) {
+      if (!card) {
         throw new Error('Запрашиваемая страница не найдена');
+      } else if (req.user._id !== card.owner.toString()) {
+        throw new Error('Недостаточно прав');
       } else {
-        res.send({ data: card });
+        return Card.deleteOne(card);
       }
+    })
+    .then((card) => {
+      res.send(card);
     })
     .catch(next);
 };
