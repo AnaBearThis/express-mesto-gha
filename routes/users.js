@@ -2,20 +2,16 @@ const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
 const {
-  getUsers, getUserById, updateUserInfo, updateAvatar,
+  getUsers, getUserById, getCurrentUser, updateUserInfo, updateAvatar,
 } = require('../controllers/users');
 
 const ERROR_CODE_NOT_FOUND = 404;
 
 router.get('/', getUsers);
+router.get('/me', getCurrentUser);
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
     userId: Joi.string().length(24),
-  }),
-}), getUserById);
-router.get('/me', celebrate({
-  params: Joi.object().keys({
-    _id: Joi.string().alphanum().length(24),
   }),
 }), getUserById);
 router.patch('/me', celebrate({

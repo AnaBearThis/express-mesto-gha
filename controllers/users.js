@@ -8,6 +8,19 @@ module.exports.getUsers = (req, res, next) => {
     .catch(next);
 };
 
+module.exports.getCurrentUser = (req, res, next) => {
+  console.log(req.params);
+  User.findById(req.user._id)
+    .then((user) => {
+      if (!user) {
+        throw new Error('Запрашиваемая страница не найдена');
+      } else {
+        res.send({ data: user });
+      }
+    })
+    .catch(next);
+};
+
 module.exports.getUserById = (req, res, next) => {
   console.log(req.params.userId);
   User.findById(req.params.userId)
