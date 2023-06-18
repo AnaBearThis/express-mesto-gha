@@ -1,7 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-const { celebrate, Joi } = require('celebrate');
+const { celebrate, Joi, errors } = require('celebrate');
 const router = require('./routes/index');
 const { createUser, login } = require('./controllers/users');
 const errorHandler = require('./middlewares/error');
@@ -40,6 +40,7 @@ app.post('/signin', celebrate({
 }), login);
 app.use('/', router);
 
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {

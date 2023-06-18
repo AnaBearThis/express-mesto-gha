@@ -29,7 +29,7 @@ class NotFound extends Error {
   constructor(err) {
     super(err);
     this.statusCode = 404;
-    this.message = 'Запрашиваемая информация не найдена';
+    this.message = 'Запрашиваемая страница не найдена';
   }
 }
 
@@ -47,7 +47,7 @@ const errorHandler = (err, req, res, next) => {
 
   if (err instanceof mongoose.Error.ValidationError) {
     error = new WrongData(err);
-  } else if (err instanceof mongoose.Error.DocumentNotFoundError || err.message === 'Запрашиваемый пользователь не найден') {
+  } else if (err instanceof mongoose.Error.DocumentNotFoundError || err.message === 'Запрашиваемая страница не найдена') {
     error = new NotFound(err);
   } else if (err.message === 'Неверные данные пользователя') {
     error = new AuthErr(err);

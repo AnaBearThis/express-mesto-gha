@@ -51,8 +51,8 @@ module.exports.login = (req, res, next) => {
 
   User.findOne({ email })
     .select('+password')
-    .orFail((err) => {
-      next(err);
+    .orFail(() => {
+      throw new Error('Неверные данные пользователя');
     })
     .then((user) => {
       bcrypt.compare(password, user.password)
@@ -68,7 +68,7 @@ module.exports.login = (req, res, next) => {
             });
             res.send({ data: user.toJSON() });
           } else {
-            throw new Error('Запрашиваемая страница не найдена');
+            throw new Error('Неверные данные пользователя');
           }
         })
         .catch(next);
@@ -83,8 +83,6 @@ module.exports.updateUserInfo = (req, res, next) => {
     .then((user) => {
       if (!user) {
         throw new Error('Запрашиваемая страница не найдена');
-      } else if (req.user._id !== user._id) {
-        throw new Error('Недостаточно прав');
       } else {
         res.send({ data: user });
       }
@@ -99,8 +97,6 @@ module.exports.updateAvatar = (req, res, next) => {
     .then((user) => {
       if (!user) {
         throw new Error('Запрашиваемая страница не найдена');
-      } else if (req.user._id !== user._id) {
-        throw new Error('Недостаточно прав');
       } else {
         res.send({ data: user });
       }
