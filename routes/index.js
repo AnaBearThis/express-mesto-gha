@@ -1,9 +1,12 @@
 const router = require('express').Router();
+const auth = require('../middlewares/auth');
 
 const ERROR_CODE_NOT_FOUND = 404;
 
 const userRoutes = require('./users');
 const cardRoutes = require('./cards');
+
+router.use(auth);
 
 router.use('/users', userRoutes);
 router.use('/cards', cardRoutes);

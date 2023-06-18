@@ -1,50 +1,35 @@
-const { default: mongoose } = require('mongoose');
 const Card = require('../models/card');
 
-const ERROR_CODE_STANDART = 500;
-const ERROR_CODE_NOT_FOUND = 404;
-const ERROR_CODE_WRONG_DATA = 400;
-
-module.exports.getCards = (req, res) => {
+module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((card) => res.send({ data: card }))
-    .catch((err) => res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` }));
+    .catch((err) => next(err));
 };
 
-module.exports.createCard = (req, res) => {
+module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
     .then((card) => res.send({ data: card }))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные при создании карточки.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.deleteCard = (req, res) => {
+module.exports.deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      if (!card) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
+      if (req.user._id !== card.owner) {
+        throw new Error('Недостаточно прав');
+      } else if (!card) {
+        throw new Error('Запрашиваемая страница не найдена');
       } else {
         res.send({ data: card });
       }
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные _id.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } },
@@ -52,21 +37,15 @@ module.exports.likeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
+        throw new Error('Запрашиваемая страница не найдена');
       } else {
         res.send({ data: card });
       }
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные для постановки лайка.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
@@ -74,16 +53,10 @@ module.exports.dislikeCard = (req, res) => {
   )
     .then((card) => {
       if (!card) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Карточка с указанным _id не найдена.' });
+        throw new Error('Запрашиваемая страница не найдена');
       } else {
         res.send({ data: card });
       }
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные для снятия лайка.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
-    });
+    .catch(next);
 };

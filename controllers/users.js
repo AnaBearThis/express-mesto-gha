@@ -1,84 +1,109 @@
-const { default: mongoose } = require('mongoose');
+const bcrypt = require('bcrypt');
+const jsonWebToken = require('jsonwebtoken');
 const User = require('../models/user');
 
-const ERROR_CODE_STANDART = 500;
-const ERROR_CODE_NOT_FOUND = 404;
-const ERROR_CODE_WRONG_DATA = 400;
-
-module.exports.getUsers = (req, res) => {
+module.exports.getUsers = (req, res, next) => {
   User.find({})
     .then((user) => res.send({ data: user }))
-    .catch((err) => res.status(500).send({ message: `Произошла ошибка ${err}` }));
+    .catch(next);
 };
 
-module.exports.getUserById = (req, res) => {
-  User.findById(req.params.userId)
+module.exports.getUserById = (req, res, next) => {
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
+        throw new Error('Запрашиваемая страница не найдена');
       } else {
         res.send({ data: user });
       }
     })
+    .catch(next);
+};
+
+module.exports.createUser = (req, res, next) => {
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+
+  bcrypt.hash(password, 10)
+    .then((hashedPass) => {
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hashedPass,
+      })
+        .then((user) => {
+          res.send({ data: user });
+        })
+        .catch((err) => {
+          next(err);
+        });
+    })
     .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные _id.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
+      next(err);
     });
 };
 
-module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
 
-  User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные при создании пользователя.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
-    });
+  User.findOne({ email })
+    .select('+password')
+    .orFail((err) => {
+      next(err);
+    })
+    .then((user) => {
+      bcrypt.compare(password, user.password)
+        .then((isValid) => {
+          if (isValid) {
+            const jwt = jsonWebToken.sign({
+              _id: user._id,
+            }, 'secret');
+            res.cookie('jwt', jwt, {
+              maxAge: 360000,
+              httpOnly: true,
+              sameSite: true,
+            });
+            res.send({ data: user.toJSON() });
+          } else {
+            throw new Error('Запрашиваемая страница не найдена');
+          }
+        })
+        .catch(next);
+    })
+    .catch(next);
 };
 
-module.exports.updateUserInfo = (req, res) => {
+module.exports.updateUserInfo = (req, res, next) => {
   const { name, about } = req.body;
 
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден.' });
+        throw new Error('Запрашиваемая страница не найдена');
+      } else if (req.user._id !== user._id) {
+        throw new Error('Недостаточно прав');
       } else {
         res.send({ data: user });
       }
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
-    });
+    .catch(next);
 };
 
-module.exports.updateAvatar = (req, res) => {
+module.exports.updateAvatar = (req, res, next) => {
   const avatar = req.body;
 
   User.findByIdAndUpdate(req.user._id, avatar, { new: true, runValidators: true })
     .then((user) => {
       if (!user) {
-        res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Запрашиваемый пользователь не найден' });
+        throw new Error('Запрашиваемая страница не найдена');
+      } else if (req.user._id !== user._id) {
+        throw new Error('Недостаточно прав');
       } else {
         res.send({ data: user });
       }
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.ValidationError) {
-        res.status(ERROR_CODE_WRONG_DATA).send({ message: 'Переданы некорректные данные при обновлении аватара.' });
-      } else {
-        res.status(ERROR_CODE_STANDART).send({ message: `Произошла ошибка ${err}` });
-      }
-    });
+    .catch(next);
 };
