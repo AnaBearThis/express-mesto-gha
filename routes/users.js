@@ -5,8 +5,6 @@ const {
   getUsers, getUserById, getCurrentUser, updateUserInfo, updateAvatar,
 } = require('../controllers/users');
 
-const ERROR_CODE_NOT_FOUND = 404;
-
 router.get('/', getUsers);
 router.get('/me', getCurrentUser);
 router.get('/:userId', celebrate({
@@ -25,8 +23,5 @@ router.patch('/me/avatar', celebrate({
     avatar: Joi.string().regex(/^(http|https):\/\/(www\.)?[a-zA-Z\d-._~:/?#[\]@!$&'()*+,;=]+#?$/),
   }),
 }), updateAvatar);
-router.use('*', (req, res) => {
-  res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Страница не найдена' });
-});
 
 module.exports = router;

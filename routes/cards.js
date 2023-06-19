@@ -5,13 +5,13 @@ const {
   getCards, createCard, deleteCard, likeCard, dislikeCard,
 } = require('../controllers/cards');
 
-const ERROR_CODE_NOT_FOUND = 404;
+const regEx = /^(http|https):\/\/[a-zA-Z0-9-_]+\.[a-zA-Z\d.-]{2,}(\/.*)?$/;
 
 router.get('/', getCards);
 router.post('/', celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().regex(/^(http|https):\/\/(www\.)?[a-zA-Z\d-._~:/?#[\]@!$&'()*+,;=]+#?$/),
+    link: Joi.string().required().regex(regEx),
   }),
 }), createCard);
 router.delete('/:cardId', celebrate({
@@ -29,8 +29,5 @@ router.delete('/:cardId/likes', celebrate({
     cardId: Joi.string().length(24),
   }),
 }), dislikeCard);
-router.use('*', (req, res) => {
-  res.status(ERROR_CODE_NOT_FOUND).send({ message: 'Страница не найдена' });
-});
 
 module.exports = router;
