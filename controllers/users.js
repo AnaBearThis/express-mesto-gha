@@ -4,7 +4,7 @@ const User = require('../models/user');
 
 module.exports.getUsers = (req, res, next) => {
   User.find({})
-    .then((user) => res.status(201).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch(next);
 };
 
@@ -49,7 +49,7 @@ module.exports.createUser = (req, res, next) => {
         password: hashedPass,
       })
         .then((user) => {
-          res.send({ data: user });
+          res.status(201).send({ data: user });
         })
         .catch((err) => {
           next(err);
